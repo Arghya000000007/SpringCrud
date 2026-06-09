@@ -43,7 +43,7 @@ SpringCrud/
 │   │   │   └── repos/
 │   │   │       └── Repository.java                    # JPA Repository for DB interaction
 │   │   └── resources/
-│   │       └── application.properties                 # Spring Boot settings & cache mapping
+│       └── application.properties                 # Spring Boot settings & cache mapping
 │   └── test/
 │       └── java/com/springcrud/
 │           ├── ProductRestControllerMvcTest.java      # MockMvc Controller Endpoint tests
@@ -51,7 +51,6 @@ SpringCrud/
 ├── pom.xml                                            # Maven configuration and dependencies
 └── README.md                                          # Project documentation
 ```
-
 ### Classes Blueprint
 
 1. **[SpringCrudApplication.java](file:///d:/springboot/SpringCrud/src/main/java/com/springcrud/SpringCrudApplication.java)**

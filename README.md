@@ -20,6 +20,62 @@ This application leverages modern technologies such as **Java 26**, **Spring Boo
 
 ---
 
+## 🔄 Project Flow & Architecture
+
+The application follows a standard **layered architecture** (Controller -> Repository -> Database) enhanced with a **Hazelcast Cache Layer** to optimize read performance.
+
+### Request Flow Diagram
+
+The following sequence diagram illustrates the lifecycle of a request (e.g., retrieving a product by ID):
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client as Client (Browser / Swagger)
+    participant C as Controller (productRestController)
+    participant H as Cache (Hazelcast Cache)
+    participant R as Repository (JPA Repository)
+    database DB as Database (MySQL / H2)
+
+    Client->>C: GET /api/products/{id}
+    Note over C: Intercepts request & checks Cache
+    C->>H: Check cache (product-cache)
+    
+    alt Cache Hit
+        H-->>C: Return cached Product
+        C-->>Client: HTTP 200 OK (Product JSON)
+    else Cache Miss
+        H-->>C: Cache Miss
+        C->>R: Fetch product by ID
+        R->>DB: SELECT * FROM product WHERE id = ?
+        DB-->>R: Product details
+        R-->>C: Product Object
+        C->>H: Store Product in cache
+        C-->>Client: HTTP 200 OK (Product JSON)
+    end
+```
+
+### Component Details
+
+1.  **Client Level (Swagger UI / HTTP Client):**
+    Initiates requests to endpoints prefixed with `/api`.
+2.  **Controller Layer (`productRestController`):**
+    *   Exposes endpoints to the clients.
+    *   Applies validation constraints (`@Valid` / `@NotNull`).
+    *   Orchestrates data retrieval, updates, and deletes.
+    *   Uses Spring Cache annotations (`@Cacheable` / `@CacheEvict`) to route requests through Hazelcast.
+3.  **Caching Layer (Hazelcast):**
+    *   Intercepts requests marked with `@Cacheable` before querying the repository.
+    *   Stores products temporarily in a distributed map named `product-cache` with a configured TTL of 3000 seconds.
+    *   Invalidates cached items when data is updated/deleted.
+4.  **Data Access Layer (JPA Repository):**
+    *   Extends `JpaRepository` to perform CRUD transactions with automatic query generation.
+5.  **Database Layer (MySQL/H2):**
+    *   Stores physical data in a persistent relational schema.
+    *   During test execution, an in-memory H2 database stands in to prevent side-effects on production data.
+
+---
+
 ## 📋 Prerequisites
 
 Before running the application, make sure you have the following installed:

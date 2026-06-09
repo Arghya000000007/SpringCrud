@@ -31,11 +31,11 @@ The following sequence diagram illustrates the lifecycle of a request (e.g., ret
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Client as Client (Browser / Swagger)
-    participant C as Controller (productRestController)
-    participant H as Cache (Hazelcast Cache)
-    participant R as Repository (JPA Repository)
-    database DB as Database (MySQL / H2)
+    actor Client as "Client (Browser / Swagger)"
+    participant C as "Controller (productRestController)"
+    participant H as "Cache (Hazelcast Cache)"
+    participant R as "Repository (JPA Repository)"
+    database DB as "Database (MySQL / H2)"
 
     Client->>C: GET /api/products/{id}
     Note over C: Intercepts request & checks Cache

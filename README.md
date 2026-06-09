@@ -20,59 +20,63 @@ This application leverages modern technologies such as **Java 26**, **Spring Boo
 
 ---
 
-## 🔄 Project Flow & Architecture
+## 📂 Project Structure & Class Blueprint
 
-The application follows a standard **layered architecture** (Controller -> Repository -> Database) enhanced with a **Hazelcast Cache Layer** to optimize read performance.
+### Directory Tree
 
-### Request Flow Diagram
+Below is the layout of the project, including key packages and source files:
 
-The following sequence diagram illustrates the lifecycle of a request (e.g., retrieving a product by ID):
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client as "Client (Browser / Swagger)"
-    participant C as "Controller (productRestController)"
-    participant H as "Cache (Hazelcast Cache)"
-    participant R as "Repository (JPA Repository)"
-    database DB as "Database (MySQL / H2)"
-
-    Client->>C: GET /api/products/{id}
-    Note over C: Intercepts request & checks Cache
-    C->>H: Check cache (product-cache)
-    
-    alt Cache Hit
-        H-->>C: Return cached Product
-        C-->>Client: HTTP 200 OK (Product JSON)
-    else Cache Miss
-        H-->>C: Cache Miss
-        C->>R: Fetch product by ID
-        R->>DB: SELECT * FROM product WHERE id = ?
-        DB-->>R: Product details
-        R-->>C: Product Object
-        C->>H: Store Product in cache
-        C-->>Client: HTTP 200 OK (Product JSON)
-    end
+```text
+SpringCrud/
+├── src/
+│   ├── main/
+│   │   ├── java/com/springcrud/
+│   │   │   ├── SpringCrudApplication.java             # Main Application Entry Point
+│   │   │   ├── config/
+│   │   │   │   └── ProductCacheConfig.java            # Hazelcast Caching Beans Config
+│   │   │   ├── controller/
+│   │   │   │   └── productRestController.java         # REST Controller exposing endpoints
+│   │   │   ├── entites/
+│   │   │   │   └── product.java                       # Product JPA Entity (with annotations)
+│   │   │   ├── exception/
+│   │   │   │   └── GlobalExceptionHandler.java        # Exception Handler Stub
+│   │   │   └── repos/
+│   │   │       └── Repository.java                    # JPA Repository for DB interaction
+│   │   └── resources/
+│   │       └── application.properties                 # Spring Boot settings & cache mapping
+│   └── test/
+│       └── java/com/springcrud/
+│           ├── ProductRestControllerMvcTest.java      # MockMvc Controller Endpoint tests
+│           └── SpringCrudApplicationTests.java        # Spring Context verification tests
+├── pom.xml                                            # Maven configuration and dependencies
+└── README.md                                          # Project documentation
 ```
 
-### Component Details
+### Classes Blueprint
 
-1.  **Client Level (Swagger UI / HTTP Client):**
-    Initiates requests to endpoints prefixed with `/api`.
-2.  **Controller Layer (`productRestController`):**
-    *   Exposes endpoints to the clients.
-    *   Applies validation constraints (`@Valid` / `@NotNull`).
-    *   Orchestrates data retrieval, updates, and deletes.
-    *   Uses Spring Cache annotations (`@Cacheable` / `@CacheEvict`) to route requests through Hazelcast.
-3.  **Caching Layer (Hazelcast):**
-    *   Intercepts requests marked with `@Cacheable` before querying the repository.
-    *   Stores products temporarily in a distributed map named `product-cache` with a configured TTL of 3000 seconds.
-    *   Invalidates cached items when data is updated/deleted.
-4.  **Data Access Layer (JPA Repository):**
-    *   Extends `JpaRepository` to perform CRUD transactions with automatic query generation.
-5.  **Database Layer (MySQL/H2):**
-    *   Stores physical data in a persistent relational schema.
-    *   During test execution, an in-memory H2 database stands in to prevent side-effects on production data.
+1. **[SpringCrudApplication.java](file:///d:/springboot/SpringCrud/src/main/java/com/springcrud/SpringCrudApplication.java)**
+   * **Role:** Application Bootstrap.
+   * **Details:** Launches the embedded Jetty server and initializes the Spring application context.
+
+2. **[ProductCacheConfig.java](file:///d:/springboot/SpringCrud/src/main/java/com/springcrud/config/ProductCacheConfig.java)**
+   * **Role:** Cache Manager configuration.
+   * **Details:** Declares and registers Hazelcast configuration and manager instances. Specifies default `product-cache` details (e.g. TTL of 3000 seconds).
+
+3. **[productRestController.java](file:///d:/springboot/SpringCrud/src/main/java/com/springcrud/controller/productRestController.java)**
+   * **Role:** REST Controller Layer.
+   * **Details:** Listens to HTTP requests on path `/products/` and interacts with database repository. Implements caching annotations (`@Cacheable` and `@CacheEvict`) and triggers validations.
+
+4. **[product.java](file:///d:/springboot/SpringCrud/src/main/java/com/springcrud/entites/product.java)**
+   * **Role:** Data Entity Model.
+   * **Details:** Maps to the MySQL database tables, containing properties `id`, `name`, `description`, and `price` along with validation constraints (`@NotNull`, `@Size`, `@Min`). Implements `Serializable` so it can be saved in Hazelcast.
+
+5. **[Repository.java](file:///d:/springboot/SpringCrud/src/main/java/com/springcrud/repos/Repository.java)**
+   * **Role:** Database Repository Layer.
+   * **Details:** Extends `JpaRepository<product, Integer>` to provide standard out-of-the-box DB operations (CRUD).
+
+6. **[GlobalExceptionHandler.java](file:///d:/springboot/SpringCrud/src/main/java/com/springcrud/exception/GlobalExceptionHandler.java)**
+   * **Role:** Exception Handling Stub.
+   * **Details:** Place to declare global controllers' exception handlers.
 
 ---
 

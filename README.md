@@ -47,7 +47,7 @@ sequenceDiagram
     else Cache Miss
         H-->>C: Cache Miss
         C->>R: Fetch product by ID
-        R->>DB: SELECT * FROM product WHERE id = ?
+        R->>DB: SELECT * FROM product WHERE id =?
         DB-->>R: Product details
         R-->>C: Product Object
         C->>H: Store Product in cache

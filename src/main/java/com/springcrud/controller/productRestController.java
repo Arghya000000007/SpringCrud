@@ -41,7 +41,7 @@ public class productRestController {
 	
 	@PostMapping("/products/")
 	@ResponseStatus(org.springframework.http.HttpStatus.CREATED)
-	public product CreateProduct( @RequestBody product p) {
+	public product CreateProduct(@Valid @RequestBody product p) {
 		LOGGER.info("Saving new product.");
 		p.setId(null); // Ensure INSERT, not UPDATE — ignore any id sent in the request body
 		return repository.save(p);
